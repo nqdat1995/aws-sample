@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+echo "--- List Objects ---"
+
+# Check if exactly one argument is passed
+if [ "$#" -ne 1 ]; then
+    echo "Error: You must provide bucket name"
+    echo "Usage: $0 <your bucket name>"
+    exit 1
+fi
+
+BUCKET_NAME=$1
+
+# https://docs.aws.amazon.com/cli/latest/reference/s3api/list-objects-v2.html
+TOTAL_ITEMS=$(aws s3api list-objects-v2 --bucket $BUCKET_NAME | jq '.Contents | length')
+
+if [ $? -ne 0 ]; then
+    exit 1
+fi
+
+if [ $TOTAL_ITEMS -gt 0 ]; then
+    echo "Total items is $TOTAL_ITEMS"
+
+    if [ $TOTAL_ITEMS -lt 5 ]; then
+        echo "Here is the list of items in bucket $BUCKET_NAME:"
+    else
+        echo "Here is the list of 5 latest items in bucket $BUCKET_NAME:"
+    fi
+    aws s3api list-objects-v2 --bucket my-sample-bucket-ap | jq '.Contents | sort_by(.LastModified) | reverse | .[0:5] | .[] | .Key' -r
+else
+    echo "There is no item in bucket $BUCKET_NAME"
+fi

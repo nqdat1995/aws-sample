@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+echo "--- List Buckets ---"
+
+# Check if exactly one argument is passed
+if [ "$#" -ne 0 ]; then
+    echo "Error: You dont need to provide input"
+    echo "Usage: $0 <your bucket name>"
+    exit 1
+fi
+
+# https://docs.aws.amazon.com/cli/latest/reference/s3api/list-buckets.html
+aws s3api list-buckets | jq '.Buckets | sort_by(.CreationDate) | reverse | .[0:5] | .[] | .Name' -r
